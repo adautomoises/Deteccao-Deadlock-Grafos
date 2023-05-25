@@ -1,12 +1,21 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+
 import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.alg.cycle.CycleDetector;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
 
 public class GraphGUI extends JFrame {
-    private Graph<JLabel, DefaultEdge> graph;
+    private static Graph<JLabel, DefaultEdge> graph;
     private JPanel panel;
+
+    private final int V = 0;
+    private final List<List<Integer>> adj = null;
 
     public GraphGUI() {
         graph = new SimpleGraph<>(DefaultEdge.class);
@@ -37,7 +46,6 @@ public class GraphGUI extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-
                 for (DefaultEdge edge : graph.edgeSet()) {
                     JLabel source = graph.getEdgeSource(edge);
                     JLabel target = graph.getEdgeTarget(edge);
