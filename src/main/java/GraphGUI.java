@@ -1,46 +1,95 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jgrapht.Graph;
-import org.jgrapht.alg.cycle.CycleDetector;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleGraph;
-import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 public class GraphGUI extends JFrame {
-    private static Graph<JLabel, DefaultEdge> graph;
-    private JPanel panel;
+    public Graph<JLabel, DefaultEdge> graph;
+    public JFrame frame;
+    public JPanel panelLeft, panelRight, panelR, panelP, panel;
+    public JLabel title;
+    public JButton button;
+    public int count = 1;
+    public int tempoUsoRecurso;
+    public int tempoSolicitacaoRecurso;
+    private  List<Processo> processos = new ArrayList<>();
 
-    private final int V = 0;
-    private final List<List<Integer>> adj = null;
+    public List<JLabel> criaRecursos (List<Recurso> recursos) {
+        panelR = new JPanel(new GridLayout(1,10));
+        for (Recurso r : recursos){
+            JLabel recurso = new JLabel(r.getNome());
+            graph.addVertex(recurso);
+            panelR.add(recurso);
+        }
+        panelRight.add(panelR, BorderLayout.NORTH);
+        return recursos.stream().map(e -> new JLabel(e.getNome())).collect(Collectors.toList());
+    }
 
-    public GraphGUI() {
-        graph = new SimpleGraph<>(DefaultEdge.class);
+    public void criaProcesso () {
+        if(count<10){
+            guiTempoUso();
+            guiTempoSolicitacaoRecurso();
+            JLabel processo = new JLabel("Processo "+ count);
+            graph.addVertex(processo);
+            panelP.add(processo);
+            processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso));
+            panelRight.add(panelP, BorderLayout.SOUTH);
+            panelRight.repaint();
+            panelRight.revalidate();
+            count++;
+        } else {
+            JOptionPane.showMessageDialog(this, "Já chegou ao limite de processos.");
+        }
+    }
 
-        // Componentes JLabel representando Processos e Recursos
-        // TO-DO: Adicionar um ícone para cada um, para melhor visualização
-        JLabel P1 = new JLabel("Processo 1");
-        JLabel P2 = new JLabel("Processo 2");
-        JLabel P3 = new JLabel("Processo 3");
-        JLabel R1 = new JLabel("Recurso 1");
-        JLabel R2 = new JLabel("Recurso 2");
-        JLabel R3 = new JLabel("Recurso 3");
+    public void criaLog(){
+        panelLeft.setBounds(0 ,0 , Integer.MAX_VALUE, 100);
+        panelLeft.setBackground(Color.lightGray);
+        title = new JLabel("Detecção de Deadlock");
+        title.setBackground(Color.LIGHT_GRAY);
+        title.setFont(new Font("Tahoma", Font.PLAIN, 30));
+        title.setForeground(Color.BLACK);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        panelLeft.add(title, BorderLayout.NORTH);
+    }
 
-        // Criando os vértices (Pontos de Conexões)
-        graph.addVertex(P1);
-        graph.addVertex(P2);
-        graph.addVertex(P3);
-        graph.addVertex(R1);
-        graph.addVertex(R2);
-        graph.addVertex(R3);
+    public void criaBotao () {
+        button = new JButton("Criar Processo");
+        panelLeft.add(button, BorderLayout. SOUTH);
+    }
 
-        // Adicionando Conexão entre Processo e Recurso
-        graph.addEdge(P1, R1);
-        graph.addEdge(P1, R2);
-        graph.addEdge(P1, R3);
+    public void guiTempoUso(){
+        tempoUsoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTu do processo "+ count +":"));
+    }
+    public void guiTempoSolicitacaoRecurso (){
+        tempoSolicitacaoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTs do processo "+ count +":"));
+    }
+
+
+    public GraphGUI(List<Recurso> recursos) {
+        graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+        panelLeft = new JPanel(new BorderLayout());
+        panelRight = new JPanel(new BorderLayout());
+        panelP = new JPanel(new GridLayout(1, 10));
+
+        criaRecursos(recursos);
+        criaLog();
+        criaBotao();
+
+        frame = new JFrame("Janela da Aplicação");
+        frame.getContentPane().setBackground(Color.WHITE);
+
+        button.addActionListener(e-> criaProcesso());
+
+//        Adicionando Conexão entre Processo e Recurso
+//        graph.addEdge(P1, R1);
+//        graph.addEdge(P1, R2);
+//        graph.addEdge(P1, R3);
 
         panel = new JPanel() {
             @Override
@@ -60,39 +109,19 @@ public class GraphGUI extends JFrame {
             }
         };
 
-        // Adicionando os componentes ao painel
-        panel.setLayout(null);
-        panel.add(P1);
-        panel.add(P2);
-        panel.add(P3);
-        panel.add(R1);
-        panel.add(R2);
-        panel.add(R3);
-
-        // Posições dos componentes no painel
-        P1.setBounds(50, 50, 100, 30);
-        P2.setBounds(200, 50, 100, 30);
-        P3.setBounds(350, 50, 100, 30);
-        R1.setBounds(50, 200, 100, 30);
-        R2.setBounds(200, 200, 100, 30);
-        R3.setBounds(350, 200, 100, 30);
-
-        add(panel);
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
-        setResizable(false);
-        setVisible(true);
+        frame.setLayout(new BorderLayout());
+        frame.getContentPane().add(panelLeft, BorderLayout.WEST);
+        frame.getContentPane().add(panelRight, BorderLayout.CENTER);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(true);
+        frame.setVisible(true);
     }
 
     private Point getCenterLocation(Component component) {
         int x = component.getX() + component.getWidth() / 2;
         int y = component.getY() + component.getHeight() / 2;
         return new Point(x, y);
-    }
-
-    public static void main(String[] args) {
-        new GraphGUI();
     }
 }

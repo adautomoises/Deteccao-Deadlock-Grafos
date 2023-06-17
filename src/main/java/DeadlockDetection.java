@@ -1,38 +1,12 @@
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.CycleDetector;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import java.util.Set;
 
-class Vertex {
-    private final String name;
-    private final boolean isResource;
-
-    Vertex(String name, boolean isResource) {
-        this.name = name;
-        this.isResource = isResource;
-    }
-
-    String getName() {
-        return name;
-    }
-
-    boolean isResource() {
-        return isResource;
-    }
-}
-
-class Edge extends DefaultEdge {
-    @Override
-    public String toString() {
-        return "(" + getSource() + " : " + getTarget() + ")";
-    }
-}
-
-public class DeadlockDetectionExample {
+public class DeadlockDetection {
     public static void main(String[] args) {
-        // Cria um grafo direcionado
+        // Cria um teste.grafo direcionado
         Graph<Vertex, Edge> graph = new SimpleDirectedGraph<>(Edge.class);
 
         // Adiciona vértices (processos e recursos)
