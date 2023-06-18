@@ -10,9 +10,6 @@ public class Main extends Thread {
                     interfaces.guiTempoDeadlock("ΔT do Sistema Operacional: ");
                     interfaces.guiNomeRecursos();
                     interfaces.programa();
-
-                    interfaces.getRecursos();
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

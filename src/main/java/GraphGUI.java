@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 import org.jgrapht.Graph;
@@ -14,10 +15,9 @@ public class GraphGUI extends JFrame {
     public JPanel panelLeft, panelRight, panelR, panelP, panel;
     public JLabel title;
     public JButton button;
-    public int count = 1;
-    public int tempoUsoRecurso;
-    public int tempoSolicitacaoRecurso;
-    private  List<Processo> processos = new ArrayList<>();
+    public int count = 1, tempoUsoRecurso, tempoSolicitacaoRecurso;
+    private List<Processo> processos = new ArrayList<>();
+    private List<Semaphore> semaforoRecursos = new ArrayList<>();
 
     public List<JLabel> criaRecursos (List<Recurso> recursos) {
         panelR = new JPanel(new GridLayout(1,10));
@@ -25,19 +25,23 @@ public class GraphGUI extends JFrame {
             JLabel recurso = new JLabel(r.getNome());
             graph.addVertex(recurso);
             panelR.add(recurso);
+
+            Semaphore semaphore = new Semaphore(1);
+            semaforoRecursos.add(semaphore);
         }
         panelRight.add(panelR, BorderLayout.NORTH);
         return recursos.stream().map(e -> new JLabel(e.getNome())).collect(Collectors.toList());
     }
 
-    public void criaProcesso () {
+    public void criaProcesso (List<Recurso> recursos) {
         if(count<10){
             guiTempoUso();
             guiTempoSolicitacaoRecurso();
             JLabel processo = new JLabel("Processo "+ count);
             graph.addVertex(processo);
             panelP.add(processo);
-            processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso));
+            new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, semaforoRecursos).start();
+            processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, semaforoRecursos));
             panelRight.add(panelP, BorderLayout.SOUTH);
             panelRight.repaint();
             panelRight.revalidate();
@@ -70,7 +74,6 @@ public class GraphGUI extends JFrame {
         tempoSolicitacaoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTs do processo "+ count +":"));
     }
 
-
     public GraphGUI(List<Recurso> recursos) {
         graph = new SimpleDirectedGraph<>(DefaultEdge.class);
         panelLeft = new JPanel(new BorderLayout());
@@ -84,7 +87,7 @@ public class GraphGUI extends JFrame {
         frame = new JFrame("Janela da Aplicação");
         frame.getContentPane().setBackground(Color.WHITE);
 
-        button.addActionListener(e-> criaProcesso());
+        button.addActionListener(e-> criaProcesso(recursos));
 
 //        Adicionando Conexão entre Processo e Recurso
 //        graph.addEdge(P1, R1);
@@ -117,6 +120,8 @@ public class GraphGUI extends JFrame {
         frame.setLocationRelativeTo(null);
         frame.setResizable(true);
         frame.setVisible(true);
+
+
     }
 
     private Point getCenterLocation(Component component) {

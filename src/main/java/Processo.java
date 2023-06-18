@@ -1,16 +1,68 @@
-public class Processo {
-    private int ID;
-    private int tempoUsoRecurso;
-    private int tempoSolicitaRecurso;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Semaphore;
+
+public class Processo extends Thread {
+    private int ID, tempoUsoRecurso, tempoSolicitaRecurso, clock = 0, index;
+    private final List<Recurso> recursos;
+    private final List<Semaphore> semaforoRecursos;
+    private List<Recurso> recursosEmUso = new ArrayList<>();
+    private List<Integer> recursosIndexEmUso = new ArrayList<>();
     public int getID() {
         return ID;
     }
     public void setID(int ID) {
         this.ID = ID;
     }
-    public Processo (int ID, int tempoUsoRecurso, int tempoSolicitaRecurso){
+    public Processo (int ID, int tempoUsoRecurso, int tempoSolicitaRecurso, List<Recurso> recursos, List<Semaphore> semaforoRecursos){
         this.ID = ID;
         this.tempoUsoRecurso = tempoUsoRecurso;
         this.tempoSolicitaRecurso = tempoSolicitaRecurso;
+        this.recursos = recursos;
+        this.semaforoRecursos = semaforoRecursos;
+    }
+    @Override
+    public void run(){
+        while (true) {
+        // Tempo de ciclo (contagem de 1s)
+        try {
+            sleep(1000);
+            clock++;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        //Usar Recurso
+            if(tempoUsoRecurso == clock){
+                if(!recursosEmUso.isEmpty()){
+                    System.out.println(recursosEmUso.stream().findFirst().get().getID() + " foi liberado pelo processo " + getID());
+                    recursosEmUso.remove(0);
+                    index = recursosIndexEmUso.remove(0);
+                    semaforoRecursos.get(index).release();
+                }
+            }
+        //Solicitar Recurso
+            if(tempoSolicitaRecurso == clock){
+                Random random = new Random();
+                index = random.nextInt(recursos.size());
+                Recurso recurso = recursos.stream()
+                        .skip(index)
+                        .findFirst()
+                        .orElse(null);
+                recursosEmUso.add(recurso);
+                recursosIndexEmUso.add(index);
+                try {
+                    System.out.println("processo " + getID()+" tenta pegar " +recurso.getID());
+                    semaforoRecursos.get(index).acquire();
+                    System.out.println(recurso.getID() + " foi pegue pelo processo " + getID());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                for (Semaphore s : semaforoRecursos){
+                System.out.println(s.availablePermits());
+                }
+            }
+        }
     }
 }

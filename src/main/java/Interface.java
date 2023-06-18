@@ -4,12 +4,9 @@ import java.util.List;
 
 public class Interface{
     public List<Recurso> recursos = new ArrayList<>();
-    public int qntRecursos;
-    public int tempoDeadlock;
-
+    public int qntRecursos, tempoDeadlock;
     public Interface () {
     }
-
     public void guiQntRecursos(String title) {
         qntRecursos = Integer.parseInt(JOptionPane.showInputDialog(title));
     }
@@ -26,8 +23,8 @@ public class Interface{
             System.out.println(r.getNome() + " : " + r.getID());
         }
     }
-
     public void programa(){
         new GraphGUI(recursos);
+        new SO(tempoDeadlock).start();
     }
 }
