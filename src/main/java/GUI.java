@@ -2,9 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.stream.Collectors;
-
 public class GUI extends JFrame {
     public JFrame frame;
     public JPanel panelLeft, panelRight, panelR, panelP;
@@ -12,29 +9,25 @@ public class GUI extends JFrame {
     public JButton button;
     public int count = 1, tempoUsoRecurso, tempoSolicitacaoRecurso;
     private List<Processo> processos = new ArrayList<>();
-    private List<Semaphore> semaforoRecursos = new ArrayList<>();
 
-    public List<JLabel> criaRecursos (List<Recurso> recursos) {
-        panelR = new JPanel(new GridLayout(1,10));
-        for (Recurso r : recursos){
-            JLabel recurso = new JLabel(r.getNome());
-            panelR.add(recurso);
-
-            Semaphore semaphore = new Semaphore(1);
-            semaforoRecursos.add(semaphore);
+    public void criaRecursos(List<Recurso> recursos) {
+        panelR = new JPanel(new GridLayout(1, 10));
+        for (Recurso r : recursos) {
+//            JLabel label = new JLabel(r.getNome());
+//            label.setIcon(new ImageIcon("/image/Teclado.png"));
+//            panelR.add(label);
+            panelR.add(new JLabel(r.getNome()));
         }
         panelRight.add(panelR, BorderLayout.NORTH);
-        return recursos.stream().map(e -> new JLabel(e.getNome())).collect(Collectors.toList());
     }
-
     public void criaProcesso (List<Recurso> recursos) {
         if(count<10){
             guiTempoUso();
             guiTempoSolicitacaoRecurso();
             JLabel processo = new JLabel("Processo "+ count);
             panelP.add(processo);
-            new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, semaforoRecursos).start();
-            processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, semaforoRecursos));
+            new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos).start();
+            processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos));
             panelRight.add(panelP, BorderLayout.SOUTH);
             panelRight.repaint();
             panelRight.revalidate();

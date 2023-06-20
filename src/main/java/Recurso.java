@@ -1,36 +1,65 @@
+import javax.swing.*;
+import java.util.concurrent.Semaphore;
+
 public class Recurso {
     private int ID;
-    private int Clock;
     private String nome;
-    private Boolean sendoUsado = false;
-    public Boolean getSendoUsado() {
-        return sendoUsado;
+    private JLabel jlabel;
+    private Semaphore semaphore;
+    private long clock;
+
+    public void setJlabel(JLabel jlabel) {
+        this.jlabel = jlabel;
     }
-    public void setSendoUsado(Boolean sendoUsado) {
-        this.sendoUsado = sendoUsado;
+
+    public Semaphore getSemaphore() {
+        return semaphore;
     }
-    public String getNome() {
-        return nome;
+
+    public void setSemaphore(Semaphore semaphore) {
+        this.semaphore = semaphore;
     }
+
+    public long getClock() {
+        return clock;
+    }
+
+    public void setClock(long clock) {
+        this.clock = clock;
+    }
+
     public int getID() {
         return ID;
     }
+
     public void setID(int ID) {
         this.ID = ID;
     }
-    public Recurso (int ID, String nome){
-        this.ID = ID;
-        this.nome = nome;
-    }
-    public int getClock() {
-        return Clock;
-    }
 
-    public void setClock(int clock) {
-        Clock = clock;
+    public String getNome() {
+        return nome;
     }
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public Semaphore getS() {
+        return semaphore;
+    }
+
+    public void setS(Semaphore semaphore) {
+        this.semaphore = semaphore;
+    }
+
+    public Recurso (int ID, String nome, JLabel jlabel){
+        this.ID = ID;
+        this.nome = nome;
+        this.jlabel = jlabel;
+        semaphore = new Semaphore(1);
+    }
+
+    public JLabel getJlabel() {
+        return jlabel;
     }
 }

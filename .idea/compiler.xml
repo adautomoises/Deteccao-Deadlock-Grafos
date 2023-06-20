@@ -10,4 +10,9 @@
       </profile>
     </annotationProcessing>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Deteccao-Deadlock-Grafos" options="--add-exports java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED" />
+    </option>
+  </component>
 </project>

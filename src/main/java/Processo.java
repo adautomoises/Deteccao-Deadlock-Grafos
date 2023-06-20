@@ -1,111 +1,94 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Semaphore;
-
-import java.time.Duration;
-import java.time.Instant;
 
 public class Processo extends Thread {
-    private int ID, tempoUsoRecurso, tempoSolicitaRecurso, clock = 0, clockS = 0, index;
+    private int ID, tempoUsoRecurso, tempoSolicitaRecurso, clockU = 0, clockS = 0;
     private final List<Recurso> recursos;
-    private final List<Semaphore> semaforoRecursos;
     private List<Recurso> recursosEmUso = new ArrayList<>();
-    private List<Integer> recursosIndexEmUso = new ArrayList<>();
     public int getID() {
         return ID;
     }
     public void setID(int ID) {
         this.ID = ID;
     }
-    public Processo (int ID, int tempoUsoRecurso, int tempoSolicitaRecurso, List<Recurso> recursos, List<Semaphore> semaforoRecursos){
+    public Processo (int ID, int tempoUsoRecurso, int tempoSolicitaRecurso, List<Recurso> recursos){
         this.ID = ID;
         this.tempoUsoRecurso = tempoUsoRecurso;
         this.tempoSolicitaRecurso = tempoSolicitaRecurso;
         this.recursos = recursos;
-        this.semaforoRecursos = semaforoRecursos;
     }
 
-    class Timer {
-        private Instant startTime;
-        private Duration elapsedTime;
-        public Timer() {
-            reset();
+    public void solicitaRecurso() throws InterruptedException {
+        Random random = new Random();
+        int index = random.nextInt(recursos.size());
+        System.out.println("processo " + getID()+" tenta pegar " + recursos.stream()
+                .skip(index)
+                .findFirst()
+                .map(Recurso::getNome)
+                .orElse("Não há recurso"));
+        if(recursosEmUso.stream().anyMatch(recurso -> recurso.getID() == index)){
+            System.out.println("Recurso em Uso...");
+            Recurso recurso = recursos.stream()
+                    .findFirst()
+                    .orElse(null);
+            recursosEmUso.add(recurso);
         }
-
-        public void reset() {
-            startTime = Instant.now();
-            elapsedTime = Duration.ZERO;
+        if(recursosEmUso.isEmpty()){
+            Recurso recurso = recursos.stream()
+                    .skip(ID)
+                    .findFirst()
+                    .orElse(null);
+            recursosEmUso.add(recurso);
+            recursosEmUso.stream().anyMatch(r -> r.getSemaphore() = 0);
+            System.out.println(recurso.getNome() + " foi pegue pelo processo " + getID());
         }
-
-        public void updateElapsedTime() {
-            Instant currentTime = Instant.now();
-            elapsedTime = elapsedTime.plus(Duration.between(startTime, currentTime));
+         else {
+            System.out.println("Recurso em Uso...");
         }
-
-        public long getElapsedTimeInSeconds() {
-            updateElapsedTime();
-            return elapsedTime.getSeconds();
-        }
-
-        public long getCurrentTimeInSeconds() {
-            Instant currentTime = Instant.now();
-            return Duration.between(startTime, currentTime).getSeconds();
-        }
+        clockS = 0;
     }
-    Timer timerNowUso = new Timer();
-    Timer timerNowSolicita = new Timer();
+
+    public void utilizaRecurso() throws InterruptedException {
+        if(!recursosEmUso.isEmpty()){
+            recursosEmUso.get(0).getSemaphore().release();
+            recursosEmUso.get(0).setClock(0);
+            System.out.println(recursosEmUso.stream().findFirst().get().getNome() + " foi liberado pelo processo " + getID());
+            recursosEmUso.remove(0);
+        }
+        clockU = 0;
+    }
+
     @Override
     public void run(){
         while (true) {
-            timerNowUso.getElapsedTimeInSeconds();
-            timerNowSolicita.getElapsedTimeInSeconds();
+            try {
+                Thread.sleep(1000);
+                clockU++;
+                clockS++;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            for (Recurso r : recursosEmUso){
+                r.setClock(r.getClock() + 1);
+                System.out.println("tempo do recurso "+ r.getNome() +" : " + r.getClock());
+            }
 
         //Usar Recurso
-            if(tempoUsoRecurso == timerNowUso.getCurrentTimeInSeconds()){
-                System.out.println("tempoUsoRecurso == clock");
-                if(!recursosEmUso.isEmpty()){
-                    System.out.println(recursosEmUso.stream().findFirst().get().getNome() + " foi liberado pelo processo " + getID());
-                    index = recursosIndexEmUso.get(0);
-                    semaforoRecursos.get(index).release();
-                    recursos.stream().skip(index).findFirst().get().setSendoUsado(false);
-                    recursosEmUso.remove(0);
-                    recursosIndexEmUso.remove(0);
-                }
-                timerNowUso.reset();
-                System.out.println("--------------semaforo-------------");
-                for (Semaphore s : semaforoRecursos){
-                    System.out.println(s.availablePermits());
+            if(tempoUsoRecurso == clockU){
+                try {
+                    utilizaRecurso();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         //Solicitar Recurso
-            if(tempoSolicitaRecurso == timerNowSolicita.getCurrentTimeInSeconds()){
-                System.out.println("tempoSolicitaRecurso == clockS");
-                Random random = new Random();
-                index = random.nextInt(recursos.size());
-                System.out.println("processo " + getID()+" tenta pegar " + recursos.stream().skip(index).findFirst().get().getNome());
-
-                if(!(recursos.stream().skip(index).findFirst().get().getSendoUsado())){
-                    Recurso recurso = recursos.stream()
-                            .skip(index)
-                            .findFirst()
-                            .orElse(null);
-                    recursos.stream().skip(index).findFirst().get().setSendoUsado(true);
-                    recursosEmUso.add(recurso);
-                    recursosIndexEmUso.add(index);
-                    try {
-                        semaforoRecursos.get(index).acquire();
-                        System.out.println(recurso.getNome() + " foi pegue pelo processo " + getID());
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                 else {
-                    System.out.println("Recurso em Uso...");
-                }
-                timerNowSolicita.reset();
-                for (Semaphore s : semaforoRecursos){
-                    System.out.println(s.availablePermits());
+            if(tempoSolicitaRecurso == clockS){
+                try {
+                    solicitaRecurso();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
