@@ -5,14 +5,9 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleDirectedGraph;
-
-public class GraphGUI extends JFrame {
-    public Graph<JLabel, DefaultEdge> graph;
+public class GUI extends JFrame {
     public JFrame frame;
-    public JPanel panelLeft, panelRight, panelR, panelP, panel;
+    public JPanel panelLeft, panelRight, panelR, panelP;
     public JLabel title;
     public JButton button;
     public int count = 1, tempoUsoRecurso, tempoSolicitacaoRecurso;
@@ -23,7 +18,6 @@ public class GraphGUI extends JFrame {
         panelR = new JPanel(new GridLayout(1,10));
         for (Recurso r : recursos){
             JLabel recurso = new JLabel(r.getNome());
-            graph.addVertex(recurso);
             panelR.add(recurso);
 
             Semaphore semaphore = new Semaphore(1);
@@ -38,7 +32,6 @@ public class GraphGUI extends JFrame {
             guiTempoUso();
             guiTempoSolicitacaoRecurso();
             JLabel processo = new JLabel("Processo "+ count);
-            graph.addVertex(processo);
             panelP.add(processo);
             new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, semaforoRecursos).start();
             processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, semaforoRecursos));
@@ -74,8 +67,7 @@ public class GraphGUI extends JFrame {
         tempoSolicitacaoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTs do processo "+ count +":"));
     }
 
-    public GraphGUI(List<Recurso> recursos) {
-        graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+    public GUI(List<Recurso> recursos) {
         panelLeft = new JPanel(new BorderLayout());
         panelRight = new JPanel(new BorderLayout());
         panelP = new JPanel(new GridLayout(1, 10));
@@ -89,29 +81,6 @@ public class GraphGUI extends JFrame {
 
         button.addActionListener(e-> criaProcesso(recursos));
 
-//        Adicionando Conexão entre Processo e Recurso
-//        graph.addEdge(P1, R1);
-//        graph.addEdge(P1, R2);
-//        graph.addEdge(P1, R3);
-
-        panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                for (DefaultEdge edge : graph.edgeSet()) {
-                    JLabel source = graph.getEdgeSource(edge);
-                    JLabel target = graph.getEdgeTarget(edge);
-
-                    Point sourceCenter = getCenterLocation(source);
-                    Point targetCenter = getCenterLocation(target);
-
-                    // Desenha uma linha do ponto de origem (Processo) ao ponto de destino (Recurso)
-                    // TO-DO: Adicionar uma seta ou não.
-                    g.drawLine(sourceCenter.x, sourceCenter.y, targetCenter.x, targetCenter.y);
-                }
-            }
-        };
-
         frame.setLayout(new BorderLayout());
         frame.getContentPane().add(panelLeft, BorderLayout.WEST);
         frame.getContentPane().add(panelRight, BorderLayout.CENTER);
@@ -120,13 +89,5 @@ public class GraphGUI extends JFrame {
         frame.setLocationRelativeTo(null);
         frame.setResizable(true);
         frame.setVisible(true);
-
-
-    }
-
-    private Point getCenterLocation(Component component) {
-        int x = component.getX() + component.getWidth() / 2;
-        int y = component.getY() + component.getHeight() / 2;
-        return new Point(x, y);
     }
 }

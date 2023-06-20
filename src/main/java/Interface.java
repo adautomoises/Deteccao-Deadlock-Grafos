@@ -24,7 +24,7 @@ public class Interface{
         }
     }
     public void programa(){
-        new GraphGUI(recursos);
+        new GUI(recursos);
         new SO(tempoDeadlock).start();
     }
 }

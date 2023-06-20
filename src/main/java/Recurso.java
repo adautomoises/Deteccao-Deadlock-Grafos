@@ -1,6 +1,7 @@
 public class Recurso {
-    private String nome;
     private int ID;
+    private int Clock;
+    private String nome;
 
     public String getNome() {
         return nome;
@@ -13,6 +14,18 @@ public class Recurso {
     }
     public Recurso (int ID, String nome){
         this.ID = ID;
+        this.nome = nome;
+    }
+
+    public int getClock() {
+        return Clock;
+    }
+
+    public void setClock(int clock) {
+        Clock = clock;
+    }
+
+    public void setNome(String nome) {
         this.nome = nome;
     }
 }
