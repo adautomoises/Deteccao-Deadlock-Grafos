@@ -43,7 +43,6 @@ public class GUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Já chegou ao limite de processos.");
         }
     }
-
     public void criaLog(){
         panelLeft.setBounds(0 ,0 , Integer.MAX_VALUE, 100);
         panelLeft.setBackground(Color.lightGray);
@@ -54,19 +53,16 @@ public class GUI extends JFrame {
         title.setHorizontalAlignment(SwingConstants.CENTER);
         panelLeft.add(title, BorderLayout.NORTH);
     }
-
     public void criaBotao () {
         button = new JButton("Criar Processo");
         panelLeft.add(button, BorderLayout. SOUTH);
     }
-
     public void guiTempoUso(){
         tempoUsoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTu do processo "+ count +":"));
     }
     public void guiTempoSolicitacaoRecurso (){
         tempoSolicitacaoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTs do processo "+ count +":"));
     }
-
     public GUI(List<Recurso> recursos) {
         panelLeft = new JPanel(new BorderLayout());
         panelRight = new JPanel(new BorderLayout());

@@ -22,7 +22,6 @@ public class Recurso {
         this.ID = ID;
         this.nome = nome;
     }
-
     public int getClock() {
         return Clock;
     }
