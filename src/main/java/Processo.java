@@ -48,24 +48,32 @@ public class Processo extends Thread {
             if(tempoSolicitaRecurso == clockS){
                 Random random = new Random();
                 index = random.nextInt(recursos.size());
-                Recurso recurso = recursos.stream()
-                        .skip(index)
-                        .findFirst()
-                        .orElse(null);
-                recursosEmUso.add(recurso);
-                recursosIndexEmUso.add(index);
-                try {
-                    System.out.println("processo " + getID()+" tenta pegar " + recurso.getNome());
-                    semaforoRecursos.get(index).acquire();
-                    System.out.println(recurso.getNome() + " foi pegue pelo processo " + getID());
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                System.out.println("processo " + getID()+" tenta pegar " + recursos.stream().skip(index).findFirst().get().getNome());
 
-                for (Semaphore s : semaforoRecursos){
-                System.out.println(s.availablePermits());
+                if(!(recursos.stream().skip(index).findFirst().get().getSendoUsado())){
+                    Recurso recurso = recursos.stream()
+                            .skip(index)
+                            .findFirst()
+                            .orElse(null);
+                    recursos.stream().skip(index).findFirst().get().setSendoUsado(true);
+                    recursosEmUso.add(recurso);
+                    recursosIndexEmUso.add(index);
+                    try {
+
+                        semaforoRecursos.get(index).acquire();
+                        System.out.println(recurso.getNome() + " foi pegue pelo processo " + getID());
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    for (Semaphore s : semaforoRecursos){
+                        System.out.println(s.availablePermits());
+                    }
+                    clockS = 0;
                 }
-                clockS = 0;
+                 else {
+                    System.out.println("Recurso em Uso...");
+                }
             }
         }
     }

@@ -2,7 +2,13 @@ public class Recurso {
     private int ID;
     private int Clock;
     private String nome;
-
+    private Boolean sendoUsado = false;
+    public Boolean getSendoUsado() {
+        return sendoUsado;
+    }
+    public void setSendoUsado(Boolean sendoUsado) {
+        this.sendoUsado = sendoUsado;
+    }
     public String getNome() {
         return nome;
     }
