@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
+import org.jgrapht.Graph;
 
 public class Recurso {
     private int ID;
@@ -10,6 +11,10 @@ public class Recurso {
     private long clock;
     private Boolean isUsed = false;
     private Processo process = null;
+
+    private Vertex<Recurso> vertexRepresentation;
+    private final Graph<Vertex<?>, Edge> graph;
+
 
     @Override
     public boolean equals(Object o) {
@@ -70,12 +75,19 @@ public class Recurso {
         return jlabel;
     }
 
-    public Recurso (int ID, String nome, JLabel jlabel){
+    public Recurso (int ID, String nome, JLabel jlabel, Graph<Vertex<?>, Edge> graph){
         this.ID = ID;
         this.nome = nome;
         this.jlabel = jlabel;
+        this.graph = graph;
         semaphore = new Semaphore(1);
     }
 
+    public void setVertexRepresentation(Vertex<Recurso> vertexRepresentation) {
+        this.vertexRepresentation = vertexRepresentation;
+    }
 
+    public Vertex<Recurso> getVertexRepresentation() {
+        return vertexRepresentation;
+    }
 }
