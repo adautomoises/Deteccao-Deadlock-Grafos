@@ -13,6 +13,7 @@ public class GUI extends JFrame {
     public JLabel title;
     public JButton button;
     public int count = 1, tempoUsoRecurso, tempoSolicitacaoRecurso;
+    public JTextArea log;
     private List<Processo> processos = new ArrayList<>();
 
     public void criaRecursos(List<Recurso> recursos) {
@@ -26,21 +27,16 @@ public class GUI extends JFrame {
         }
         panelRight.add(panelR, BorderLayout.NORTH);
     }
-    public void criaProcesso(List<Recurso> recursos) {
+    public void criaProcesso(List<Recurso> recursos, JTextArea log) {
         if(count<10){
             guiTempoUso();
             guiTempoSolicitacaoRecurso();
-//            JLabel processo = new JLabel("Processo "+ count);
-//            panelP.add(processo);
 
-
-            Processo processoObjeto = new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos);
+            Processo processoObjeto = new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos, log);
             processoObjeto.start();
             processos.add(processoObjeto);
             panelRight.add(panelP, BorderLayout.SOUTH);
-//            panelRight.repaint();
-//            panelRight.revalidate();
-            count++;
+
 
             Vertex<Processo> v = new Vertex<>("P" + count, false, processoObjeto);
             GraphConcurrent graphConcurrent = GraphConcurrent.getInstance();
@@ -48,30 +44,13 @@ public class GUI extends JFrame {
             graphConcurrent.acquire();
             graph.addVertex(v);
             graphConcurrent.release();
-
             processoObjeto.setVertexRepresentation(v);
-
-            // TODO: How the fuck?
-//            Point source = getCenterLocation(processo);
-//            Point target = getCenterLocation(panelP);
-//
-//            JPanel panel = new JPanel() {
-//                @Override
-//                protected void paintComponent(Graphics g) {
-//                    super.paintComponent(g);
-//
-//                    // Desenha uma linha do ponto de origem (Processo) ao ponto de destino (Recurso)
-//                    // TO-DO: Adicionar uma seta ou não. // SIM :(
-//                    g.drawLine(source.x, source.y, target.x, target.y);
-//                }
-//            };
-//
-//            panelP.add(panel);
+            count++;
         } else {
             JOptionPane.showMessageDialog(this, "Já chegou ao limite de processos.");
         }
     }
-    public void criaLog(){
+    public void criaLog(JTextArea log){
         panelLeft.setBounds(0 ,0 , Integer.MAX_VALUE, 100);
         panelLeft.setBackground(Color.lightGray);
         title = new JLabel("Detecção de Deadlock");
@@ -79,6 +58,8 @@ public class GUI extends JFrame {
         title.setFont(new Font("Tahoma", Font.PLAIN, 30));
         title.setForeground(Color.BLACK);
         title.setHorizontalAlignment(SwingConstants.CENTER);
+
+        panelLeft.add(log, BorderLayout.CENTER);
         panelLeft.add(title, BorderLayout.NORTH);
     }
     public void criaBotao () {
@@ -95,15 +76,16 @@ public class GUI extends JFrame {
         panelLeft = new JPanel(new BorderLayout());
         panelRight = new JPanel(new BorderLayout());
         panelP = new JPanel(new GridLayout(1, 10));
-
+        log = new JTextArea();
+        log.setEditable(false);
         criaRecursos(recursos);
-        criaLog();
+        criaLog(log);
         criaBotao();
 
         frame = new JFrame("Janela da Aplicação");
         frame.getContentPane().setBackground(Color.WHITE);
 
-        button.addActionListener(e-> criaProcesso(recursos));
+        button.addActionListener(e-> criaProcesso(recursos, log));
 
         frame.setLayout(new BorderLayout());
         frame.getContentPane().add(panelLeft, BorderLayout.WEST);
@@ -125,7 +107,6 @@ public class GUI extends JFrame {
         }
     }
 
-    int offset = 0;
     public void updateGraphGUI() {
         panelP.removeAll();
         panelR.removeAll();
@@ -136,16 +117,16 @@ public class GUI extends JFrame {
 
         Set<Vertex<?>> vertices = graph.vertexSet();
 
-        List<Vertex<?>> collect = vertices.stream()
+        List<Vertex<?>> recurso = vertices.stream()
             .filter(Vertex::isResource)
             .toList();
 
         List<JairLulonaro> jairLulonaros = new ArrayList<>();
-        for (Vertex<?> recurso : collect) {
-            JLabel comp = new JLabel(((Recurso) recurso.getItem()).getNome());
+        for (Vertex<?> rec : recurso) {
+            JLabel comp = new JLabel(((Recurso) rec.getItem()).getNome());
             panelR.add(comp);
 
-            JairLulonaro jairLulonaro = new JairLulonaro(recurso, comp);
+            JairLulonaro jairLulonaro = new JairLulonaro(rec, comp);
             jairLulonaros.add(jairLulonaro);
         }
 
@@ -184,19 +165,23 @@ public class GUI extends JFrame {
 
             // TODO: Remember to draw what you want
             if (edge.isConnected()) {
-                panelRight.getGraphics().drawLine(offset, offset, 100, 100);
-                offset+=15;
+                panelRight.getGraphics().drawLine(source.x - 100 * (count - 1), source.y, target.x - 100 * (count - 1) , target.y);
             }
 
         }
 
         graphConcurrent.release();
-
     }
 
     private Point getCenterLocation(Component component) {
-        int x = component.getX();
-        int y = component.getY();
+        int x = component.getX() + component.getWidth() / 2;
+        int y = component.getY() + component.getHeight() / 2;
+        Container parent = component.getParent();
+        while (parent != null && !(parent instanceof Window)) {
+            x += parent.getX();
+            y += parent.getY();
+            parent = parent.getParent();
+        }
         return new Point(x, y);
     }
 }
