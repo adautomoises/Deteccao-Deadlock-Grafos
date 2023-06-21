@@ -23,6 +23,12 @@ public class SO extends Thread{
                 throw new RuntimeException(e);
             }
 
+            GraphConcurrent instance = GraphConcurrent.getInstance();
+            instance.acquire();
+            Graph<Vertex<?>, Edge> internalGraph = instance.getInternalGraph();
+            /// Calculos e mais calculos...
+            instance.release();
+
 //            if(tempoDeadlock == clock){
 //                System.out.println("Detecção de Deadlock ... tempo: "+tempoDeadlock);
 //                clock = 0 ;

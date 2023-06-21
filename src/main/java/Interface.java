@@ -17,8 +17,6 @@ public class Interface{
             "/image/Disquete.png", "/image/HD.png", "/image/Display.png", "/image/Auto-Falante.png", "/image/Notebook.png"
     );
 
-    Graph<Vertex<?>, Edge> graph = new SimpleDirectedGraph<>(Edge.class);
-
     public Interface () {
     }
     public void guiQntRecursos(String title) {
@@ -40,7 +38,7 @@ public class Interface{
     public void guiNomeRecursos() {
         for(int i = 0; i < this.qntRecursos; i++){
             JLabel label = new JLabel(new ImageIcon("/image/Teclado.png"));
-            Recurso recurso = new Recurso(i, nomeRecursos.get(i), label, graph);
+            Recurso recurso = new Recurso(i, nomeRecursos.get(i), label);
             recursos.add(recurso);
         }
     }
@@ -48,11 +46,17 @@ public class Interface{
     public void programa(){
         for (Recurso recurso : recursos) {
             Vertex<Recurso> vertex = new Vertex<>(recurso.getNome(), true, recurso);
+            GraphConcurrent graphConcurrent = GraphConcurrent.getInstance();
+            Graph<Vertex<?>, Edge> graph = graphConcurrent.getInternalGraph();
+
+            graphConcurrent.acquire();
             graph.addVertex(vertex);
+            graphConcurrent.release();
+
             recurso.setVertexRepresentation(vertex);
         }
 
-        GUI gui = new GUI(recursos, graph);
+        GUI gui = new GUI(recursos);
         SO so = new SO(tempoDeadlock, gui);
         so.start();
     }

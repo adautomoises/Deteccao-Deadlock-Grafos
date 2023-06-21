@@ -13,8 +13,6 @@ public class Recurso {
     private Processo process = null;
 
     private Vertex<Recurso> vertexRepresentation;
-    private final Graph<Vertex<?>, Edge> graph;
-
 
     @Override
     public boolean equals(Object o) {
@@ -75,11 +73,10 @@ public class Recurso {
         return jlabel;
     }
 
-    public Recurso (int ID, String nome, JLabel jlabel, Graph<Vertex<?>, Edge> graph){
+    public Recurso (int ID, String nome, JLabel jlabel){
         this.ID = ID;
         this.nome = nome;
         this.jlabel = jlabel;
-        this.graph = graph;
         semaphore = new Semaphore(1);
     }
 

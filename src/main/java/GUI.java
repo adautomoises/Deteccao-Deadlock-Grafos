@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
 
 public class GUI extends JFrame {
     public JFrame frame;
@@ -13,7 +14,6 @@ public class GUI extends JFrame {
     public JButton button;
     public int count = 1, tempoUsoRecurso, tempoSolicitacaoRecurso;
     private List<Processo> processos = new ArrayList<>();
-    private final Graph<Vertex<?>, Edge> graph;
 
     public void criaRecursos(List<Recurso> recursos) {
         panelR = new JPanel(new GridLayout(1, 10));
@@ -22,7 +22,7 @@ public class GUI extends JFrame {
 //            label.setIcon(new ImageIcon("/image/Teclado.png"));
 //            panelR.add(label);
             // TODO: Add Graph structure here...
-            panelR.add(new JLabel(recurso.getNome()));
+//            panelR.add(new JLabel(recurso.getNome()));
         }
         panelRight.add(panelR, BorderLayout.NORTH);
     }
@@ -30,22 +30,25 @@ public class GUI extends JFrame {
         if(count<10){
             guiTempoUso();
             guiTempoSolicitacaoRecurso();
-            JLabel processo = new JLabel("Processo "+ count);
-            panelP.add(processo);
-            Processo processoObjeto = new Processo(
-                count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos,
-                graph
-            );
+//            JLabel processo = new JLabel("Processo "+ count);
+//            panelP.add(processo);
+
+
+            Processo processoObjeto = new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos);
             processoObjeto.start();
-            processos.add(new Processo(count, tempoUsoRecurso, tempoSolicitacaoRecurso, recursos,
-                graph));
+            processos.add(processoObjeto);
             panelRight.add(panelP, BorderLayout.SOUTH);
-            panelRight.repaint();
-            panelRight.revalidate();
+//            panelRight.repaint();
+//            panelRight.revalidate();
             count++;
 
             Vertex<Processo> v = new Vertex<>("P" + count, false, processoObjeto);
+            GraphConcurrent graphConcurrent = GraphConcurrent.getInstance();
+            Graph<Vertex<?>, Edge> graph = graphConcurrent.getInternalGraph();
+            graphConcurrent.acquire();
             graph.addVertex(v);
+            graphConcurrent.release();
+
             processoObjeto.setVertexRepresentation(v);
 
             // TODO: How the fuck?
@@ -88,7 +91,7 @@ public class GUI extends JFrame {
     public void guiTempoSolicitacaoRecurso (){
         tempoSolicitacaoRecurso = Integer.parseInt(JOptionPane.showInputDialog("ΔTs do processo "+ count +":"));
     }
-    public GUI(List<Recurso> recursos, Graph<Vertex<?>, Edge> graph) {
+    public GUI(List<Recurso> recursos) {
         panelLeft = new JPanel(new BorderLayout());
         panelRight = new JPanel(new BorderLayout());
         panelP = new JPanel(new GridLayout(1, 10));
@@ -110,42 +113,90 @@ public class GUI extends JFrame {
         frame.setLocationRelativeTo(null);
         frame.setResizable(true);
         frame.setVisible(true);
-
-        this.graph = graph;
     }
 
+    class JairLulonaro {
+        Vertex<?> vertex;
+        JLabel comp;
+
+        public JairLulonaro(Vertex<?> vertex, JLabel comp) {
+            this.vertex = vertex;
+            this.comp = comp;
+        }
+    }
+
+    int offset = 0;
     public void updateGraphGUI() {
         panelP.removeAll();
         panelR.removeAll();
 
+        GraphConcurrent graphConcurrent = GraphConcurrent.getInstance();
+        Graph<Vertex<?>, Edge> graph = graphConcurrent.getInternalGraph();
+        graphConcurrent.acquire();
+
         Set<Vertex<?>> vertices = graph.vertexSet();
 
-        List<Recurso> collect = (List<Recurso>) vertices.stream()
+        List<Vertex<?>> collect = vertices.stream()
             .filter(Vertex::isResource)
-            .map(Vertex::getItem)
             .toList();
 
-        for (Recurso recurso : collect) {
-            panelR.add(new JLabel(recurso.getNome()));
+        List<JairLulonaro> jairLulonaros = new ArrayList<>();
+        for (Vertex<?> recurso : collect) {
+            JLabel comp = new JLabel(((Recurso) recurso.getItem()).getNome());
+            panelR.add(comp);
+
+            JairLulonaro jairLulonaro = new JairLulonaro(recurso, comp);
+            jairLulonaros.add(jairLulonaro);
         }
 
-        List<Processo> proc = (List<Processo>) vertices.stream()
+        List<Vertex<?>> proc = vertices.stream()
             .filter(v -> !v.isResource())
-            .map(Vertex::getItem)
             .toList();
 
-        for (Processo processo : proc) {
-            JLabel procs = new JLabel(processo.getName());
+        for (Vertex<?> processo : proc) {
+            JLabel procs = new JLabel(((Processo) processo.getItem()).getName());
             panelP.add(procs);
+
+            JairLulonaro jairLulonaro = new JairLulonaro(processo, procs);
+            jairLulonaros.add(jairLulonaro);
         }
 
         panelRight.repaint();
         panelRight.revalidate();
+
+        Set<Edge> edges = graph.edgeSet();
+        for (Edge edge : edges) {
+            Vertex<?> edgeSource = graph.getEdgeSource(edge);
+            Vertex<?> edgeTarget = graph.getEdgeTarget(edge);
+
+            JairLulonaro jairLulonaro = jairLulonaros
+                .stream()
+                .filter(i->i.vertex.equals(edgeSource))
+                .findFirst().orElseThrow();
+
+            JairLulonaro jairLulonaro2 = jairLulonaros
+                .stream()
+                .filter(i->i.vertex.equals(edgeTarget))
+                .findFirst().orElseThrow();
+
+            Point source = getCenterLocation(jairLulonaro.comp);
+            Point target = getCenterLocation(jairLulonaro2.comp);
+
+            // TODO: Remember to draw what you want
+            if (edge.isConnected()) {
+                panelRight.getGraphics().drawLine(offset, offset, 100, 100);
+                offset+=15;
+            }
+
+        }
+
+        graphConcurrent.release();
+
     }
 
     private Point getCenterLocation(Component component) {
-        int x = component.getX() + component.getWidth() / 2;
-        int y = component.getY() + component.getHeight() / 2;
+        int x = component.getX();
+        int y = component.getY();
         return new Point(x, y);
     }
 }

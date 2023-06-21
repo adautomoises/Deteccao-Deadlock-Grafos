@@ -12,6 +12,10 @@ public class Edge extends DefaultEdge {
         this(false);
     }
 
+    public boolean isConnected() {
+        return isConnected;
+    }
+
     @Override
     public String toString() {
         return "(" + getSource() + " : " + getTarget() + ")";
