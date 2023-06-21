@@ -36,7 +36,6 @@ public class Interface{
     }
     public void guiNomeRecursos() {
         for(int i = 0; i < this.qntRecursos; i++){
-
             JLabel label = new JLabel(new ImageIcon("/image/Teclado.png"));
             recursos.add(new Recurso(i, nomeRecursos.get(i), label));
         }
