@@ -28,7 +28,18 @@ public class SO extends Thread{
             Graph<Vertex<?>, Edge> internalGraph = instance.getInternalGraph();
             /// Calculos e mais calculos...
             instance.release();
-
+            CycleDetector<Vertex, Edge> cycleDetector = new CycleDetector<>((Graph<Vertex, Edge>) ((Object) internalGraph));
+            Set<Vertex> deadlockVertices = cycleDetector.findCycles();
+            if (!deadlockVertices.isEmpty()) {
+                System.out.println("Deadlock detectado. Processos em deadlock:");
+                for (Vertex vertex : deadlockVertices) {
+                    if (!vertex.isResource()) {
+                        System.out.println("Processo: " + vertex.getName());
+                    }
+                }
+            } else {
+                System.out.println("Não há deadlock no sistema.");
+            }
 //            if(tempoDeadlock == clock){
 //                System.out.println("Detecção de Deadlock ... tempo: "+tempoDeadlock);
 //                clock = 0 ;

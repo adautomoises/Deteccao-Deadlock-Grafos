@@ -43,7 +43,11 @@ public class Processo extends Thread {
 
             graphConcurrent.acquire();
             graph.addEdge(vertexRepresentation, recurso.getVertexRepresentation(), new Edge(false));
+            graphConcurrent.release();
+
             recurso.getSemaphore().acquire();
+
+            graphConcurrent.acquire();
             graph.removeEdge(vertexRepresentation, recurso.getVertexRepresentation());
             graph.addEdge(vertexRepresentation, recurso.getVertexRepresentation(), new Edge(true));
             graphConcurrent.release();
@@ -62,10 +66,11 @@ public class Processo extends Thread {
                 recurso.setClock(0);
                 lixeira.add(recurso);
 
-                GraphConcurrent graphConcurrent = GraphConcurrent.getInstance();
-                Graph<Vertex<?>, Edge> graph = graphConcurrent.getInternalGraph();
 
                 recurso.getSemaphore().release();
+
+                GraphConcurrent graphConcurrent = GraphConcurrent.getInstance();
+                Graph<Vertex<?>, Edge> graph = graphConcurrent.getInternalGraph();
                 graphConcurrent.acquire();
                 graph.removeEdge(vertexRepresentation, recurso.getVertexRepresentation());
                 graphConcurrent.release();
